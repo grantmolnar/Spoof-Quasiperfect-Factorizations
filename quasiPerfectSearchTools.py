@@ -24,7 +24,9 @@ def primeSieve(n):
     #We now filter for the primes we care about
     return [p for p in primes if p % 8 == 5 or p % 8 == 7]
 
-primeBound = 1000000
+#primeBound = 1000000
+
+primeBound = int(input("Presieve by primes up to...? "))
 
 #A list of all primes up to primeBound which are congruent to 5 or 7 mod 8
 primes5or7mod8 = primeSieve(primeBound)
@@ -78,7 +80,6 @@ def sigma(q, a):
         return (q**(a+1) - 1)//(q-1)
 
 #Given a spoof factorization [(q1, a1), ..., (qk, ak)], returns tsigma_{-1} of that factorization
-#Currently returns a floating point answer, when we want something exact in the rationals
 def tsigma(spoof):
     #Given a factor (q, a), returns (q - q^-a)/(q - 1)
     def _tsigmaFactor(factor):
@@ -86,7 +87,7 @@ def tsigma(spoof):
         a = factor[1]
         #We don't want trivial factors showing up!
         #assert q != 0 and q != -1
-        #If q = 1 and a = infinity, we need special syntax, and we need to think extra carefully about this case
+        #If q = 1 and a = oo, we need special syntax, and we need to think extra carefully about this case
         if a == oo:
             return (q, q - 1)
             #return q/(q-1)
@@ -107,6 +108,7 @@ def tsigma(spoof):
 
 #Given a partial factorization partialSpoof, returns a lower bound on tsigma compatible with that partial factorization
 #This bound is given subject to the understanding that every term has even power
+#This is the function L defined in Theorem 4.4 of [arxiv]
 def L(partialSpoof):
     #Given a partial factor, returns the lower extremal associated factor
     #We are assuming that the exponent is even
@@ -120,6 +122,7 @@ def L(partialSpoof):
 
 #Given a partial factorization partialSpoof, returns an upper bound on tsigma compatible with that partial factorization
 #This bound is given subject to the understanding that every term has even power
+#This is the function U defined in Theorem 4.4 of [arxiv]
 def U(partialSpoof):
     #Given a partial factor, returns the upper extremal associated factor
     #We are assuming that the exponent is even
@@ -145,6 +148,7 @@ def target(S):
 
 #Given an odd factor q, yields all powers of r which might occur in an odd spoof quasiperfect factorization
 #If lowerBound is given, only returns values greater than or equal to LowerBound
+#See Corollary 3.4 of [arxiv]
 def _iterAllPowers(q, lowerBound = 0):
     if q % 8 == 1:
         #If our lower bound is less than or equal to 0, we start for 0
@@ -226,7 +230,7 @@ def _iterFactors(q, lowerBound, upperBound):
             yield (q, upperBound, oo)
             break
 
-#Given a base r, what is the minimal power of r that could occur in our factorization?
+#Given a base r, we compute the the minimal power of r that could occur in our factorization
 def minimalPower(r, partialSpoof = []):
     if len(partialSpoof) > 0 and abs(r) == abs(partialSpoof[-1][0]):
         m = partialSpoof[-1][1]
@@ -381,7 +385,7 @@ def nextFactor(partialSpoof, k):
         #This list contains all our candidate partial spoofs after one iterations
         output = []
         for r in range(qplus,boundOnBase,2):
-            #WHAT SHOULD MY EXPONENTS BE?!?
+            #We determine, in the weakest possible terms, our next partial factor with base r
             candidateFactor = (r,minimalPower(r),oo)
             #These tests appear to destroy all nontrivial cases for k = 2 and k = 3. Is this a good thing, or an error?
             if _testL(candidateFactor):
@@ -404,7 +408,7 @@ def nextFactor(partialSpoof, k):
             return lessThan((2,1),(numeratorRHS, denominatorRHS))
         output = []
         for r in range(qminus,boundOnBase,-2):
-            #WHAT SHOULD MY EXPONENTS BE?!?
+            #We determine, in the weakest possible terms, our next partial factor with base r
             candidateFactor = (r,minimalPower(r),oo)
             if _testU(candidateFactor):
                 output.append(partialSpoof + [candidateFactor])
